@@ -5,6 +5,14 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <cmath>
+#include <QFileDialog>
+
+#include <QTextStream>
+#include <QFile>
+#include <QTextEdit>
+#include <QString>
+#include <iostream>
+#include <string>
 
 #define MAX_MAS_SIZE 200 //максимальный размер массива
 
@@ -82,6 +90,7 @@ private slots:
     void on_pushButton_Search_clicked();
 
 
+
     void on_pushButton_OpenTxt_clicked();
 
     void on_pushButton_OpenBin_clicked();
@@ -89,6 +98,12 @@ private slots:
     void on_pushButton_SaveTxt_clicked();
 
     void on_pushButton_SaveBin_clicked();
+
+
+    void SaveTxt();
+    void SaveBin();
+    void OpenTxt();
+    void OpenBin();
 
 private:
     Ui::MainWindow *ui;

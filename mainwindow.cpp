@@ -1056,9 +1056,19 @@ void MainWindow::BinarySearch(double *mas, int n, int k, bool flag) //??????????
     }
 }
 
-void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT
-{
 
+
+
+
+
+// buttons for saving/opening  txt/bin
+
+
+void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT VVVVVVVVVVVVVVVVVV
+{
+    no_auto_change = false;
+    OpenTxt();
+    no_auto_change = true;
 }
 
 void MainWindow::on_pushButton_OpenBin_clicked() // OPEN BIN
@@ -1066,12 +1076,199 @@ void MainWindow::on_pushButton_OpenBin_clicked() // OPEN BIN
 
 }
 
-void MainWindow::on_pushButton_SaveTxt_clicked() // SAVE TXT
+void MainWindow::on_pushButton_SaveTxt_clicked() // SAVE TXT VVVVVVVVVVVVVVVV
 {
+    no_auto_change = false;
+    bool flag = true;
 
+    for (int i = 0; i < ui->spinBox->value(); i++)
+    {
+        if((ui->tableWidget->item(i,0) == nullptr) or (ui->tableWidget->item(i,0)->text().isEmpty()))
+        {
+            QMessageBox quastion;
+            quastion.setWindowTitle("Внимание!");
+            quastion.setText("В таблице есть пустые строки, Вы хотите продолжить?");
+            quastion.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            int res = quastion.exec();
+
+            switch (res)
+            {
+                case QMessageBox::Yes:
+                {
+                    flag = false;
+                    SaveTxt();
+                    break;
+                }
+                case QMessageBox::No:
+                {
+                    flag = false;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    if (flag == true)
+    {
+        SaveTxt();
+    }
+    no_auto_change = true;
 }
 
-void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN
+void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN VVVVVVVVVVVVVVVVVVVVV
+{
+    no_auto_change = false;
+    bool flag = true;
+
+    for(int i = 0; i < ui->spinBox->value(); i ++)
+    {
+        if(ui->tableWidget->item(i,0) != nullptr) // если все ячейки не пустые
+            ui->tableWidget->item(i,0)->text().toInt(&flag); // то мы преобразуем в инт с флагом
+
+        if( (ui->tableWidget->item(i,0) == nullptr) or (ui->tableWidget->item(i,0)->text().isEmpty()) or (!flag))
+        {// если есть пустые ячейки или строки или значение при преобразовании некорректно
+            flag = false;
+            QMessageBox::critical(this, "Ошибка", "Пустые ячейки или неккоректные значения", QMessageBox::Ok);
+        }
+    }
+    if (flag)
+    {// если все ок
+        SaveBin();
+    }
+    no_auto_change = true;
+}
+
+
+// funcs for saving/opening  txt/bin
+
+void MainWindow::SaveTxt() // VVVVVVVVVVVVVVVVVVVVVVVVV
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить как txt"), "", tr("Text files (*.txt)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file;
+        file.setFileName(fileName);
+        file.open(QIODevice::WriteOnly);
+
+        QString str;
+        int size = ui->spinBox->value();
+        str.setNum(size);
+        str.append("\n");
+
+        file.write(str.toUtf8());
+
+        for(int i = 0; i < size; i++)
+        {
+            if(ui->tableWidget->item(i,0) == nullptr)
+            {
+                QTableWidgetItem * ti;
+                ti = new QTableWidgetItem;
+                ui->tableWidget->setItem(i,0,ti);
+            }
+            str = ui->tableWidget->item(i,0)->text();
+            str.append("\n");
+
+            file.write(str.toUtf8());
+        }
+        file.close();
+    }
+    else
+    {
+        QMessageBox::critical(this, "Ошибка!", "Файл не был выбран", QMessageBox::Ok);
+    }
+}
+
+void MainWindow::SaveBin()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить как bin"), "", tr("Binary files (*.bin)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file;
+        file.setFileName(fileName);
+        file.open(QIODevice::WriteOnly);
+
+        char * mas;
+        int size_int = sizeof (int);
+        mas = new char[size_int];
+
+        int size = ui->spinBox->value();
+        memcpy(mas, &size, size_int);
+        file.write(mas, size_int);
+
+        for(int i = 0; i < size; i++)
+        {
+            if(ui->tableWidget->item(i,0) == nullptr)
+            {
+                QTableWidgetItem *ti;
+                ti = new QTableWidgetItem;
+                ui->tableWidget->setItem(i,0,ti);
+            }
+            int tmp = ui->tableWidget->item(i,0)->text().toInt();
+            memcpy(mas, &tmp, size_int);
+            file.write(mas,size_int);
+        }
+        file.close();
+        delete [] mas;
+        mas = nullptr;
+    }
+    else
+    {
+        QMessageBox::critical(this, "Внимание", "Файл не выбран", QMessageBox::Ok);
+    }
+    // ПОСМОТРЕТЬ И ДОДЕЛАТЬ ОШИБКИ (ПРОВЕРКИ)
+}
+
+void MainWindow::OpenTxt()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл txt"), "", tr("Text files (*.txt)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file;
+        file.setFileName(fileName);
+        file.open(QIODevice::ReadOnly);
+
+        QString str;
+        QByteArray ba;
+        int size;
+        bool flag;
+
+        ba = file.readLine();
+        str.clear();
+        str.append(ba);
+        str.remove("\n");
+        size = str.toInt(&flag);
+
+        if (!flag)
+            QMessageBox::critical(this, "Ошибка!", "Неверный формат файла", QMessageBox::Ok);
+        else
+        {
+            ui->spinBox->setValue(size);
+
+            for(int i = 0; i < size; i++)
+            {
+                if(ui->tableWidget->item(0,i) == nullptr)
+                {
+                    QTableWidgetItem * ti;
+                    ti = new QTableWidgetItem;
+                    ui->tableWidget->setItem(i,0,ti);
+                }
+                ba = file.readLine();
+                str.clear();
+                str.append(ba);
+                str.remove("\n");
+                ui->tableWidget->item(i,0)->setText(str);
+            }
+        }
+        file.close();
+    } // пофиксить баг - если в файле первое число меньше количества строк то не читать, т.к утечка данных
+        // если в файле первое число больше 200 (макс число строк в спинбоксе) то прога крашится, значит не нужно пропускать если 1 число > 200
+        //
+}
+
+void MainWindow::OpenBin()
 {
 
 }
