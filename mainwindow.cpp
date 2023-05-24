@@ -1064,7 +1064,7 @@ void MainWindow::BinarySearch(double *mas, int n, int k, bool flag) //??????????
 // buttons for saving/opening  txt/bin
 
 
-void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT VVVVVVVVVVVVVVVVVV
+void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT ДОДЕЛАТЬ ПРИ ОТКРЫТИИ ЛОКУМЕНТА ЗАКРАШИВАТЬ КРАСНЫМ НЕПРАВИЛЬНЫЕ ЯЧЕЙКИ
 {
     no_auto_change = false;
     OpenTxt();
@@ -1282,6 +1282,9 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
         }
         while (!line.isNull());
 
+        ui->label_2->setText(line);
+        ui->label_2->show();
+
 
         file.seek(0);//changed pointer in file
         ba = file.readLine();
@@ -1289,7 +1292,7 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
         if (!flag)
             QMessageBox::critical(this, "Ошибка!", "Неверный формат файла", QMessageBox::Ok);
-        else if ((linecount > size) or (size > 200))
+        else if ((linecount > size) or (size > 200) or (linecount < size))
         {
             QMessageBox::critical(this, "Ошибка", "Неккоректный размер файла", QMessageBox::Ok);
         }
