@@ -1064,21 +1064,22 @@ void MainWindow::BinarySearch(double *mas, int n, int k, bool flag) //??????????
 // buttons for saving/opening  txt/bin
 
 
-void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT ДОДЕЛАТЬ ПРИ ОТКРЫТИИ ЛОКУМЕНТА ЗАКРАШИВАТЬ КРАСНЫМ НЕПРАВИЛЬНЫЕ ЯЧЕЙКИ
+void MainWindow::on_pushButton_OpenTxt_clicked() // OPEN TXT
 {
     no_auto_change = false;
     OpenTxt();
+
     no_auto_change = true;
 }
 
-void MainWindow::on_pushButton_OpenBin_clicked() // OPEN BIN VVVVVVVVVVVVVVVVVV
+void MainWindow::on_pushButton_OpenBin_clicked() // OPEN BIN
 {
     no_auto_change = false;
     OpenBin();
     no_auto_change = true;
 }
 
-void MainWindow::on_pushButton_SaveTxt_clicked() // SAVE TXT VVVVVVVVVVVVVVVVVV
+void MainWindow::on_pushButton_SaveTxt_clicked() // SAVE TXT
 {
     no_auto_change = false;
     bool flag = true;
@@ -1117,7 +1118,7 @@ void MainWindow::on_pushButton_SaveTxt_clicked() // SAVE TXT VVVVVVVVVVVVVVVVVV
     no_auto_change = true;
 }
 
-void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN VVVVVVVVVVVVVVVVVV
+void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN
 {
     no_auto_change = false;
     bool flag = true;
@@ -1127,7 +1128,7 @@ void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN VVVVVVVVVVVVVVVVVV
         if(ui->tableWidget->item(i,0) != nullptr) // если все ячейки не пустые
             ui->tableWidget->item(i,0)->text().toInt(&flag); // то мы преобразуем в инт с флагом
 
-        if( (ui->tableWidget->item(i,0) == nullptr) or (ui->tableWidget->item(i,0)->text().isEmpty()) or (!flag))
+        if( (ui->tableWidget->item(i,0) == nullptr) or (ui->tableWidget->item(i,0)->text().isEmpty()))// or (!flag))
         {// если есть пустые ячейки или строки или значение при преобразовании некорректно
             QMessageBox msgBox;
             msgBox.setWindowTitle("Ошибка");
@@ -1144,7 +1145,27 @@ void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN VVVVVVVVVVVVVVVVVV
                     break;
                 }
             }
-            break;        }
+            break;
+         }
+        else if (!flag)
+        {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Ошибка");
+            msgBox.setText("Неккоректные значения");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            int res = msgBox.exec();
+
+            //Обработка ошибки
+            switch (res)
+            {//какую кнопку нажал юзер
+                case QMessageBox::Ok:
+                {//нажали кнопку Yes
+                    flag = false;
+                    break;
+                }
+            }
+            break;
+        }
     }
     if (flag)
     {// если все ок
@@ -1156,7 +1177,7 @@ void MainWindow::on_pushButton_SaveBin_clicked() // SAVE BIN VVVVVVVVVVVVVVVVVV
 
 // funcs for saving/opening  txt/bin
 
-void MainWindow::SaveTxt() // VVVVVVVVVVVVVVVVVVVVVVVVV
+void MainWindow::SaveTxt() // функция сохранить как txt
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить как txt"), "", tr("Text files (*.txt)"));
 
@@ -1194,7 +1215,7 @@ void MainWindow::SaveTxt() // VVVVVVVVVVVVVVVVVVVVVVVVV
     }
 }
 
-void MainWindow::SaveBin() // VVV
+void MainWindow::SaveBin() // функция сохранить как bin
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить как bin"), "", tr("Binary files (*.bin)"));
 
@@ -1225,7 +1246,7 @@ void MainWindow::SaveBin() // VVV
             }
             int tmp = ui->tableWidget->item(i,0)->text().toInt(&flag);
 
-            if (!(flag and (tmp >= -101 and tmp <= 100)))
+            if (!(flag and (tmp >= -100000000 and tmp <= 100000000)))
             {
                 tmp = 101;
             }
@@ -1248,7 +1269,7 @@ void MainWindow::SaveBin() // VVV
     // ПОСМОТРЕТЬ И ДОДЕЛАТЬ ОШИБКИ (ПРОВЕРКИ)
 }
 
-void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
+void MainWindow::OpenTxt() // функция открытия как txt
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл txt"), "", tr("Text files (*.txt)"));
 
@@ -1282,9 +1303,6 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
         }
         while (!line.isNull());
 
-        ui->label_2->setText(line);
-        ui->label_2->show();
-
 
         file.seek(0);//changed pointer in file
         ba = file.readLine();
@@ -1292,14 +1310,14 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
         if (!flag)
             QMessageBox::critical(this, "Ошибка!", "Неверный формат файла", QMessageBox::Ok);
-        else if ((linecount > size) or (size > 200) or (linecount < size))
+        else if ((linecount > size) or (size > 200) or (linecount < size) or (size == 0))
         {
             QMessageBox::critical(this, "Ошибка", "Неккоректный размер файла", QMessageBox::Ok);
         }
         else
         {
             ui->spinBox->setValue(size);
-            no_auto_change = false;
+            //no_auto_change = false;
 
             for(int i = 0; i < size; i++)
             {
@@ -1315,7 +1333,7 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
                 str.remove("\n");
                 ui->tableWidget->item(i,0)->setText(str);
             }
-            no_auto_change = true;
+            //no_auto_change = true;
         }
         file.close();
     } // пофиксить баг - если в файле первое число меньше количества строк то не читать, т.к утечка данных
@@ -1323,15 +1341,13 @@ void MainWindow::OpenTxt() // VVVVVVVVVVVVVVVVVVVVVVVVVVVV
 
 }
 
-void MainWindow::OpenBin()
+void MainWindow::OpenBin() //Функция открытия как bin
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Открыть как bin"), "C:/Users/sulle/OneDrive/Документы", tr("Binary files (*.bin)"));
     QFileInfo fi(fileName);
 
     if (fileName.isEmpty())
         QMessageBox::information(this, "Ошибка", "Файл не выбран");
-    else if(fi.suffix() != "bin")
-        QMessageBox::information(this, "Ошибка", "Введен некоректный формат файла");
     else
     {
         //Open file
@@ -1345,7 +1361,7 @@ void MainWindow::OpenBin()
         size_t size_t = sizeof(int);
         mas = new char[size_int];
 
-        int size = ui->spinBox->value(); //size table (row)
+        int size;
 
         //Read size arr in .bin
         file.read(mas, size_int);
